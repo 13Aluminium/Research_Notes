@@ -686,14 +686,14 @@ blockquote {
 </p><h1 id="2528ea11-bb4d-8092-99bf-fb7000611f75" class="">Introduction</h1><p id="2528ea11-bb4d-801d-9030-de0499ff0040" class="">Printed Sanskrit books interleave Shlokas(which are in Sanskrit language) and their prose translations or commetary in modern Indo-Aryan languages. This is Because Sanskrit and these languages can share closely related scripts(e.g., Sanskrit and Hindi both use Devanagri) along with that their glyph shares are visually similar.</p><p id="2528ea11-bb4d-804d-b98e-eeac4b720843" class="">The main goal in this work is to differentiate Shlokas from their respective translative prose or commentary directly on the page and localize those regions precisely. We cast this as a two-class object detection problem <code>SHLOK</code> vs <code>NO-SHLOK</code>  and show a light weight detector trained on a small dataset can reliably segment mix-layout pages, enabling downstream OCR and, ultimately high-quality textual resources for Sanskrit NLP.</p><p id="2528ea11-bb4d-8090-a21c-f6bb2e2ed5ed" class="">
 </p><h1 id="2528ea11-bb4d-804a-b6e5-d4dcd4826bfc" class="">Dataset</h1><h2 id="2528ea11-bb4d-80bb-b1b9-f6569dd32de4" class="">Dataset Curation</h2><p id="2528ea11-bb4d-8053-b41e-e295d5528770" class="">There are total of 103 images in the dataset; collected from the first canto of Shiv Puran, namely Vishyeshwar Samhita. Images contains Sanskrit-Hindi content in each and every page</p><p id="2528ea11-bb4d-80c5-9506-ecf84880020d" class="">Simple python script was used to extract images from a PDF of the book. After that all 103 images were manually annotated in 2 distinct classes <code>SHLOK</code> vs <code>NO-SHLOK</code></p><figure>
   <video controls width="720">
-    <source src="Detecting%20.../Data_Annotation_1.mp4" type="video/mp4">
+    <source src="Detecting Sanskrit Shloks & Devanagri Indo-Aryan T 2528ea11bb4d80e68459e017a8890d6d/Data_Annotation_1.mp4" type="video/mp4">
     Your browser does not support the video tag.
   </video>
   <figcaption>Hyperlapse of how the Annotation process looked like</figcaption>
 </figure>
 <figure>
   <video controls width="720">
-    <source src="Detecting%20.../Data_Annotation_2.mp4" type="video/mp4">
+    <source src="Detecting Sanskrit Shloks & Devanagri Indo-Aryan T 2528ea11bb4d80e68459e017a8890d6d/Data_Annotation_2.mp4" type="video/mp4">
     Your browser does not support the video tag.
   </video>
   <figcaption>Hyperlapse of how the Annotation process looked like</figcaption>
