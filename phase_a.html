@@ -1,0 +1,696 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>Detecting Sanskrit Shloks &amp; Devanagri/Indo-Aryan Translations in Scanned Sanskrit Texts with YOLOv8</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 3px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.collection-content td {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.column-list {
+	display: flex;
+	justify-content: space-between;
+}
+
+.column {
+	padding: 0 1em;
+}
+
+.column:first-child {
+	padding-left: 0;
+}
+
+.column:last-child {
+	padding-right: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+	margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-block;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1.25em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(50, 48, 44, 1);
+}
+.highlight-gray {
+	color: rgba(115, 114, 110, 1);
+	fill: rgba(115, 114, 110, 1);
+}
+.highlight-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.highlight-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.highlight-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.highlight-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.highlight-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(205, 60, 58, 1);
+	fill: rgba(205, 60, 58, 1);
+}
+.highlight-default_background {
+	color: rgba(50, 48, 44, 1);
+}
+.highlight-gray_background {
+	background: rgba(248, 248, 247, 1);
+}
+.highlight-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.highlight-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.highlight-yellow_background {
+	background: rgba(251, 243, 219, 1);
+}
+.highlight-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.highlight-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.highlight-purple_background {
+	background: rgba(248, 243, 252, 1);
+}
+.highlight-pink_background {
+	background: rgba(252, 241, 246, 1);
+}
+.highlight-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(115, 114, 110, 1);
+	fill: rgba(115, 114, 110, 1);
+}
+.block-color-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.block-color-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.block-color-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.block-color-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.block-color-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(205, 60, 58, 1);
+	fill: rgba(205, 60, 58, 1);
+}
+.block-color-default_background {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray_background {
+	background: rgba(248, 248, 247, 1);
+}
+.block-color-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.block-color-yellow_background {
+	background: rgba(251, 243, 219, 1);
+}
+.block-color-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.block-color-purple_background {
+	background: rgba(248, 243, 252, 1);
+}
+.block-color-pink_background {
+	background: rgba(252, 241, 246, 1);
+}
+.block-color-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.select-value-color-default { background-color: rgba(42, 28, 0, 0.07); }
+.select-value-color-gray { background-color: rgba(28, 19, 1, 0.11); }
+.select-value-color-brown { background-color: rgba(142, 58, 1, 0.141); }
+.select-value-color-orange { background-color: rgba(213, 96, 0, 0.188); }
+.select-value-color-yellow { background-color: rgba(209, 155, 0, 0.238); }
+.select-value-color-green { background-color: rgba(1, 104, 42, 0.145); }
+.select-value-color-blue { background-color: rgba(0, 108, 191, 0.156); }
+.select-value-color-purple { background-color: rgba(104, 1, 184, 0.125); }
+.select-value-color-pink { background-color: rgba(204, 1, 88, 0.137); }
+.select-value-color-red { background-color: rgba(228, 26, 0, 0.148); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="2528ea11-bb4d-80e6-8459-e017a8890d6d" class="page sans"><header><h1 class="page-title">Detecting Sanskrit Shloks &amp; Devanagri/Indo-Aryan Translations in Scanned Sanskrit Texts with YOLOv8</h1><p class="page-description"></p></header><div class="page-body"><p id="2528ea11-bb4d-807d-87a8-e711dd896d20" class="">
+</p><h1 id="2528ea11-bb4d-8092-99bf-fb7000611f75" class="">Introduction</h1><p id="2528ea11-bb4d-801d-9030-de0499ff0040" class="">Printed Sanskrit books interleave Shlokas(which are in Sanskrit language) and their prose translations or commetary in modern Indo-Aryan languages. This is Because Sanskrit and these languages can share closely related scripts(e.g., Sanskrit and Hindi both use Devanagri) along with that their glyph shares are visually similar.</p><p id="2528ea11-bb4d-804d-b98e-eeac4b720843" class="">The main goal in this work is to differentiate Shlokas from their respective translative prose or commentary directly on the page and localize those regions precisely. We cast this as a two-class object detection problem <code>SHLOK</code> vs <code>NO-SHLOK</code>  and show a light weight detector trained on a small dataset can reliably segment mix-layout pages, enabling downstream OCR and, ultimately high-quality textual resources for Sanskrit NLP.</p><p id="2528ea11-bb4d-8090-a21c-f6bb2e2ed5ed" class="">
+</p><h1 id="2528ea11-bb4d-804a-b6e5-d4dcd4826bfc" class="">Dataset</h1><h2 id="2528ea11-bb4d-80bb-b1b9-f6569dd32de4" class="">Dataset Curation</h2><p id="2528ea11-bb4d-8053-b41e-e295d5528770" class="">There are total of 103 images in the dataset; collected from the first canto of Shiv Puran, namely Vishyeshwar Samhita. Images contains Sanskrit-Hindi content in each and every page</p><p id="2528ea11-bb4d-80c5-9506-ecf84880020d" class="">Simple python script was used to extract images from a PDF of the book. After that all 103 images were manually annotated in 2 distinct classes <code>SHLOK</code> vs <code>NO-SHLOK</code></p><figure id="2528ea11-bb4d-804a-9a35-cb98be0e9bea"><div class="source"><a href="Detecting%20Sanskrit%20Shloks%20&amp;%20Devanagri%20Indo-Aryan%20T%202528ea11bb4d80e68459e017a8890d6d/Data_Annotation_1.mp4">attachment:0396629d-df9d-45a9-8318-384707c0ebbb:Data_Annotation_1.mp4</a></div><figcaption>                                Hyperlapse of how the Annotation process looked like</figcaption></figure><figure id="2528ea11-bb4d-8006-ac09-e0c68ab5c9f7"><div class="source"><a href="Detecting%20Sanskrit%20Shloks%20&amp;%20Devanagri%20Indo-Aryan%20T%202528ea11bb4d80e68459e017a8890d6d/Data_Annotation_2.mp4">attachment:6c468b1f-4826-43c0-bdc9-ea7e6bb8b41d:Data_Annotation_2.mp4</a></div><figcaption>                                Hyperlapse of how the Annotation process looked like</figcaption></figure><p id="2528ea11-bb4d-80f8-b1dd-f5a6742d70aa" class="">
+</p><h2 id="2528ea11-bb4d-8076-97e7-d77b223de5ca" class="">Data Preprocessing</h2><p id="2528ea11-bb4d-8086-ade0-c1311a632b8b" class="">Original dataset consisted of 103 images, which were randomly split into 3 parts</p><table id="2528ea11-bb4d-8077-9e0d-d4113ee100c7" class="simple-table"><tbody><tr id="2528ea11-bb4d-80e5-b53c-c05fea16a113"><td id="dycQ" class="" style="width:353.5px">Train</td><td id="UkV\" class="" style="width:353.5px">82 images</td></tr><tr id="2528ea11-bb4d-8079-a613-fa3f96536688"><td id="dycQ" class="" style="width:353.5px">Test</td><td id="UkV\" class="" style="width:353.5px">12 images</td></tr><tr id="2528ea11-bb4d-8090-bdb7-e4512d49b0f8"><td id="dycQ" class="" style="width:353.5px">Valid</td><td id="UkV\" class="" style="width:353.5px">9 images</td></tr></tbody></table><p id="2528ea11-bb4d-8014-b9d0-f9ed53488fb3" class="">Augmentations were applied to only Training set of images to increase the size of the dataset. Following Augmentations were applied</p><ol type="a" id="2528ea11-bb4d-80d4-b622-dc1a8ae2bf98" class="numbered-list" start="1"><li>Horizontal Flip</li></ol><ol type="a" id="2528ea11-bb4d-80ac-b07f-c8b7fca7bbd1" class="numbered-list" start="2"><li>Vertical Flip</li></ol><ol type="a" id="2528ea11-bb4d-803b-beae-f647de3d0325" class="numbered-list" start="3"><li>Crop 0%</li></ol><ol type="a" id="2528ea11-bb4d-800a-bd19-e60ce32c09c7" class="numbered-list" start="4"><li>Crop 28%</li></ol><ol type="a" id="2528ea11-bb4d-803f-81e5-db470a553322" class="numbered-list" start="5"><li>Rotation between -15% and +15%</li></ol><ol type="a" id="2528ea11-bb4d-80b4-b352-da6a94b99856" class="numbered-list" start="6"><li>Hue between -15° and +15°</li></ol><ol type="a" id="2528ea11-bb4d-80d7-9228-c8511efb1ff5" class="numbered-list" start="7"><li>Blur upto 2.5px</li></ol><ol type="a" id="2528ea11-bb4d-8032-b0e1-e59224a4e946" class="numbered-list" start="8"><li>Noise upto 1.88% of pixels</li></ol><p id="2528ea11-bb4d-80cc-b477-ed2ac292298d" class="">
+</p><p id="2528ea11-bb4d-805f-b5a3-e036d1f705dc" class="">Per image 3 more images were created. Therefore total images created after augmentations were 267</p><table id="2528ea11-bb4d-80a8-b511-c2225732faa8" class="simple-table"><tbody><tr id="2528ea11-bb4d-801a-8ba1-c3d36173b05b"><td id="dycQ" class="" style="width:353.5px">Train</td><td id="UkV\" class="" style="width:353.5px">246 images</td></tr><tr id="2528ea11-bb4d-80c2-b809-f0dc8e380924"><td id="dycQ" class="" style="width:353.5px">Test</td><td id="UkV\" class="" style="width:353.5px">12 images</td></tr><tr id="2528ea11-bb4d-8015-af68-f8cc50b6a55c"><td id="dycQ" class="" style="width:353.5px">Valid</td><td id="UkV\" class="" style="width:353.5px">9 images</td></tr></tbody></table><p id="2528ea11-bb4d-800e-8fd0-d2bb2cc32fd8" class="">Each images contain zero or more labeled <code>SHLOK</code> vs <code>NO-SHLOK</code></p><table id="2528ea11-bb4d-80a1-a97d-e83c3c51bb78" class="simple-table"><tbody><tr id="2528ea11-bb4d-80ca-8bba-c6a2ad2763f4"><td id="kRHx" class=""><strong><span style="border-bottom:0.05em solid">Split</span></strong></td><td id="~_ou" class=""><strong><span style="border-bottom:0.05em solid">Images</span></strong></td><td id="xFLb" class=""><strong><span style="border-bottom:0.05em solid">NO-SHLOK Boxes</span></strong></td><td id="E\MU" class=""><strong><span style="border-bottom:0.05em solid">SHLOK Boxes</span></strong></td><td id="k{Fp" class=""><strong><span style="border-bottom:0.05em solid">Total Boxes</span></strong></td></tr><tr id="2528ea11-bb4d-8094-acdf-f52d58d3456b"><td id="kRHx" class="">Train</td><td id="~_ou" class="">246</td><td id="xFLb" class="">574</td><td id="E\MU" class="">1744</td><td id="k{Fp" class="">2318</td></tr><tr id="2528ea11-bb4d-803c-8c75-d70f52cf7378"><td id="kRHx" class="">Valid</td><td id="~_ou" class="">9</td><td id="xFLb" class="">23</td><td id="E\MU" class="">64</td><td id="k{Fp" class="">87</td></tr><tr id="2528ea11-bb4d-8006-afa5-e0da2669bf75"><td id="kRHx" class="">Test</td><td id="~_ou" class="">12</td><td id="xFLb" class="">29</td><td id="E\MU" class="">90</td><td id="k{Fp" class="">119</td></tr><tr id="2528ea11-bb4d-80b7-88ab-da80f6301a08"><td id="kRHx" class="">Total</td><td id="~_ou" class="">267</td><td id="xFLb" class="">626</td><td id="E\MU" class="">1898</td><td id="k{Fp" class="">2524</td></tr></tbody></table><h1 id="2528ea11-bb4d-8098-8ec2-edb21c1ae416" class="">Model Architecture</h1><p id="2538ea11-bb4d-8076-b89b-d81daeec61a1" class="">We employ a lightweight <strong>YOLOv8-s</strong> detector configured for two classes (<code>NO-SHLOK</code>, <code>SHLOK</code>). The network follows a standard one-stage layout: a <strong>C2f</strong> convolutional backbone extracts pyramidal features; a <strong>PAN-FPN</strong> neck fuses semantic and spatial cues across three scales; and a <strong>decoupled, anchor-free head</strong> produces per-scale predictions at output strides <strong>8, 16, and 32</strong> (feature maps of 80×80, 40×40, and 20×20 for a 640×640 input). Each grid location emits (i) class logits for the two labels and (ii) bounding-box offsets parameterized as <strong>left/top/right/bottom distance distributions</strong> optimized with <strong>Distribution Focal Loss (DFL)</strong>, which yields sharper box edges on verse blocks. Box quality is trained with an IoU-family localization loss (CIoU/DIoU in practice), while classification uses BCE-with-logits; the total objective is a weighted sum of <strong>box</strong>, <strong>DFL</strong>, and <strong>cls</strong> terms. At inference, per-scale predictions are combined with <strong>class-wise NMS</strong> (IoU≈0.45) to return a compact set of <code>SHLOK</code>/<code>NO-SHLOK</code> regions suitable for downstream OCR. The small variant was selected to balance accuracy and speed on a Colab <strong>T4</strong> while mitigating overfitting in a modest-sized corpus (≈246 train pages; 9 val; 12 test, per the dataset export). </p><p id="2538ea11-bb4d-80f6-ba2d-f5efab38d41f" class="">
+</p><h1 id="2538ea11-bb4d-807f-b4f7-fc0da6860291" class="">Methodology</h1><p id="2538ea11-bb4d-80c2-a7f6-edebfc6516d5" class="">We fine-tuned a lightweight YOLOv8-s object detector on Google Colab (T4 GPU) under a document-centric training regime. Images were letterboxed to <strong>640×640</strong> and trained with a <strong>batch size of 16</strong> (reduced to 8 only if memory constrained) for a budget of <strong>120 epochs</strong> with <strong>early stopping</strong> (patience = 30). Optimization used an initial learning rate of <strong>0.005</strong> with <strong>cosine decay</strong> to a floor factor of <strong>0.01</strong>, <strong>momentum 0.937</strong>, and <strong>weight decay 5×10⁻⁴</strong>. Datasets were referenced via absolute paths to the <code>{train, valid, test}/images</code> directories with labels in normalized YOLO <code>xywh</code> format; caching was enabled for faster I/O. We applied mild, document-friendly augmentations that preserve line geometry: small rotations, limited translation and scale, <strong>mosaic=0.2</strong>, and <strong>no flips or color jitter</strong>. During training we logged the standard validation metrics at every epoch—<strong>Precision, Recall, mAP@0.50, and mAP@0.50:0.95</strong>—via Ultralytics’ <code>results.csv</code>. After training, we reported test-set detection metrics and also computed a <strong>page-level routing</strong> signal defined as: label a page <strong>Ślok</strong> if any <code>SHLOK</code> detection attains confidence ≥ <strong>τ</strong> (default <strong>τ = 0.40</strong>), otherwise <strong>NO-SHLOK</strong>. This converts region detections into a binary, OCR-ready decision.</p><p id="2538ea11-bb4d-8041-bf49-f3d95d772891" class="">
+</p><h1 id="2538ea11-bb4d-802d-9046-ce7f9c6b60d3" class="">Results</h1><p id="2538ea11-bb4d-8014-9d36-d85c4f423f3b" class="">Training dynamics showed rapid convergence: <strong>mAP@0.50</strong> rose from <strong>0.205</strong> at epoch 1 to <strong>0.701</strong> by epoch 3, after which performance entered a plateau window around epochs <strong>20–30</strong> with the expected small oscillations characteristic of a tiny validation set. The best validation scores were <strong>mAP@0.50 = 0.803</strong> at epoch <strong>23</strong> and <strong>mAP@0.50:0.95 = 0.586</strong> at epoch <strong>25</strong>. All three loss terms (<strong>box, classification, DFL</strong>) decreased steadily throughout, indicating stable optimization without divergence.</p><figure id="2538ea11-bb4d-80f8-9cb1-ebd7af1c368c" class="image"><a href="Detecting%20Sanskrit%20Shloks%20&amp;%20Devanagri%20Indo-Aryan%20T%202528ea11bb4d80e68459e017a8890d6d/output(2).png"><img style="width:709.9879760742188px" src="Detecting%20Sanskrit%20Shloks%20&amp;%20Devanagri%20Indo-Aryan%20T%202528ea11bb4d80e68459e017a8890d6d/output(2).png"/></a><figcaption>Figure 1 : <strong>Learning-rate schedule </strong></figcaption></figure><p id="2538ea11-bb4d-807f-8ffa-c32b96b2cdd8" class=""><strong>Learning-rate schedule (Fig. 1).</strong> Training used a short warm-up followed by cosine decay. The curve rises steeply over the first few epochs to its peak, then decays smoothly and almost linearly on this time scale across the remainder of the run. This schedule gives large steps when the model is far from optimum (fast loss reduction in the first ~5–8 epochs) and progressively smaller steps as it begins to fit fine page details. The monotone decay after warm-up correlates with steadily falling losses and stabilizing validation metrics.</p><p id="2538ea11-bb4d-80c1-ad1e-c847737ee772" class="">
+</p><figure id="2538ea11-bb4d-80b4-8730-ff2351940d8d" class="image"><a href="Detecting%20Sanskrit%20Shloks%20&amp;%20Devanagri%20Indo-Aryan%20T%202528ea11bb4d80e68459e017a8890d6d/output(1).png"><img style="width:720px" src="Detecting%20Sanskrit%20Shloks%20&amp;%20Devanagri%20Indo-Aryan%20T%202528ea11bb4d80e68459e017a8890d6d/output(1).png"/></a><figcaption>Figure 2: <strong>Validation metrics over epochs</strong></figcaption></figure><p id="2538ea11-bb4d-8088-913f-c69496f90810" class=""><strong>Validation metrics over epochs (Fig. 2).</strong> Precision, recall, and mAP increase rapidly in the first few epochs and then oscillate in a narrow band once the model reaches its plateau. Concretely, mAP@50 climbs from <strong>0.205</strong> at epoch 1 to <strong>0.701</strong> by epoch 3 and settles in the <strong>0.75–0.83</strong> range thereafter; the best checkpoint reaches <strong>mAP@50 = 0.803</strong> (epoch 23). The stricter <strong>mAP@50–95</strong> follows the same shape but at a lower level, peaking at <strong>0.586</strong> (epoch 25). Precision and recall both sit in the high-0.7 to low-0.8 range for most of training, with brief dips/spikes that are typical when validating on a very small set (9 pages, 87 boxes). The brief valley around the mid-40s epochs aligns with a transient uptick in validation loss (Fig. 3) and disappears in subsequent epochs, indicating variance rather than degradation.</p><p id="2538ea11-bb4d-8014-bf66-d38390c2607c" class="">
+</p><figure id="2538ea11-bb4d-8063-981c-de74f32456e3" class="image"><a href="Detecting%20Sanskrit%20Shloks%20&amp;%20Devanagri%20Indo-Aryan%20T%202528ea11bb4d80e68459e017a8890d6d/output.png"><img style="width:709.9879760742188px" src="Detecting%20Sanskrit%20Shloks%20&amp;%20Devanagri%20Indo-Aryan%20T%202528ea11bb4d80e68459e017a8890d6d/output.png"/></a><figcaption>Figure 3 : <strong>Training vs. validation losses</strong></figcaption></figure><p id="2538ea11-bb4d-80cb-935e-e7d707c0d7cf" class=""><strong>Training vs. validation losses (Fig. 3).</strong> All three loss components—<strong>box</strong>, <strong>classification</strong>, and <strong>DFL</strong>—drop sharply in the first ~10 epochs and continue a slow, steady decline thereafter. The training curves stay below the validation curves as expected; the generalization gap remains modest and does not widen over time, suggesting the model does not overfit despite the small dataset. A single spike in validation loss around the mid-40s epochs coincides with the temporary dip in validation metrics in Fig. 2; because it is isolated and followed by immediate recovery, it is consistent with sampling variance (harder pages or augmentation draws) rather than a training instability. Overall, the losses corroborate the metric story: <strong>fast early convergence</strong> followed by a <strong>stable plateau</strong>.</p><p id="2538ea11-bb4d-80d6-9681-f17d71df18f2" class="">
+</p><h1 id="2538ea11-bb4d-8028-83b5-d49235a86125" class="">Conclusion and Future Improvements<br/></h1><p id="2538ea11-bb4d-8079-b0cf-ce10542d5360" class="">In summary, a compact YOLOv8-s detector trained on roughly 100<strong> pages</strong> with conservative, layout-preserving augmentations attains strong validation performance (<strong>mAP@0.50 ≈ 0.80</strong>) and <strong>perfect page-level recall</strong> on our test split. Most importantly, this region-first step enables OCR that is both easier and better: detecting verse before recognition produces <strong>cleaner crops</strong> and allows <strong>specialized recognizers and language models</strong> to be applied to Ślok versus prose, yielding higher quality text. That clean text, in turn, fuels Sanskrit NLP—improving <strong>pretraining corpora</strong>, <strong>morphology and parsing resources</strong>, <strong>metrical analysis</strong>, and <strong>cross-lingual MT/retrieval</strong>.</p><p id="2538ea11-bb4d-8048-ae02-da251f118207" class="">
+</p><p id="2538ea11-bb4d-80be-a177-de157e76b561" class="">Going forward, we will operate a simple data engine: (i) run the current detector over large pools of unlabeled pages to produce candidate boxes; (ii) select <strong>high-confidence</strong> and <strong>diverse</strong> predictions (and targeted <strong>hard negatives</strong>) for curation, optionally verifying a small sample by hand; (iii) <strong>merge the vetted pseudo-labels</strong> with the gold annotations; (iv) <strong>retrain the model from scratch</strong> on the enlarged dataset with the same recipe; and (v) repeat. This bootstrapped loop steadily increases dataset size and coverage while avoiding confirmation bias (we keep a fixed dev/test split, cap the pseudo-label loss weight if used, and enforce class balance). As the dataset grows across iterations, we expect monotonic gains in detection quality and more reliable page-level routing, which in turn further improves OCR accuracy and downstream Sanskrit NLP.</p><figure id="24c8ea11-bb4d-8070-912c-ed0f6b7506f8" class="link-to-page"><a href="https://www.notion.so/Making-of-a-Sanskrit-OCR-24c8ea11bb4d8070912ced0f6b7506f8?pvs=21">Making of a Sanskrit OCR </a></figure><p id="2538ea11-bb4d-80c2-990b-c866e630dc19" class="">
+</p></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>
