@@ -1,0 +1,699 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>Making of a Sanskrit OCR </title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 3px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.collection-content td {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.column-list {
+	display: flex;
+	justify-content: space-between;
+}
+
+.column {
+	padding: 0 1em;
+}
+
+.column:first-child {
+	padding-left: 0;
+}
+
+.column:last-child {
+	padding-right: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+	margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-block;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1.25em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(50, 48, 44, 1);
+}
+.highlight-gray {
+	color: rgba(115, 114, 110, 1);
+	fill: rgba(115, 114, 110, 1);
+}
+.highlight-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.highlight-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.highlight-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.highlight-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.highlight-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(205, 60, 58, 1);
+	fill: rgba(205, 60, 58, 1);
+}
+.highlight-default_background {
+	color: rgba(50, 48, 44, 1);
+}
+.highlight-gray_background {
+	background: rgba(248, 248, 247, 1);
+}
+.highlight-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.highlight-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.highlight-yellow_background {
+	background: rgba(251, 243, 219, 1);
+}
+.highlight-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.highlight-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.highlight-purple_background {
+	background: rgba(248, 243, 252, 1);
+}
+.highlight-pink_background {
+	background: rgba(252, 241, 246, 1);
+}
+.highlight-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(115, 114, 110, 1);
+	fill: rgba(115, 114, 110, 1);
+}
+.block-color-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.block-color-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.block-color-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.block-color-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.block-color-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(205, 60, 58, 1);
+	fill: rgba(205, 60, 58, 1);
+}
+.block-color-default_background {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray_background {
+	background: rgba(248, 248, 247, 1);
+}
+.block-color-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.block-color-yellow_background {
+	background: rgba(251, 243, 219, 1);
+}
+.block-color-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.block-color-purple_background {
+	background: rgba(248, 243, 252, 1);
+}
+.block-color-pink_background {
+	background: rgba(252, 241, 246, 1);
+}
+.block-color-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.select-value-color-default { background-color: rgba(42, 28, 0, 0.07); }
+.select-value-color-gray { background-color: rgba(28, 19, 1, 0.11); }
+.select-value-color-brown { background-color: rgba(142, 58, 1, 0.141); }
+.select-value-color-orange { background-color: rgba(213, 96, 0, 0.188); }
+.select-value-color-yellow { background-color: rgba(209, 155, 0, 0.238); }
+.select-value-color-green { background-color: rgba(1, 104, 42, 0.145); }
+.select-value-color-blue { background-color: rgba(0, 108, 191, 0.156); }
+.select-value-color-purple { background-color: rgba(104, 1, 184, 0.125); }
+.select-value-color-pink { background-color: rgba(204, 1, 88, 0.137); }
+.select-value-color-red { background-color: rgba(228, 26, 0, 0.148); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="24c8ea11-bb4d-8070-912c-ed0f6b7506f8" class="page sans"><header><h1 class="page-title">Making of a Sanskrit OCR </h1><p class="page-description"></p></header><div class="page-body"><figure id="24c8ea11-bb4d-8046-a6a8-ca3ad46fee65" class="image"><a href="Making%20of%20a%20Sanskrit%20OCR%2024c8ea11bb4d8070912ced0f6b7506f8/946e1ce0-385b-4612-895b-f58efeed4349.png"><img style="width:697.7049180327868px" src="Making%20of%20a%20Sanskrit%20OCR%2024c8ea11bb4d8070912ced0f6b7506f8/946e1ce0-385b-4612-895b-f58efeed4349.png"/></a></figure><h1 id="24c8ea11-bb4d-8081-979e-ed3fa02df0ee" class="">Introduction</h1><p id="24c8ea11-bb4d-80e9-af05-c9149589cab5" class="">Sanskrit, one of the world’s oldest documented languages, is an Old Indo-Aryan language in which the most ancient documents are the Vedas, composed in what is called Vedic Sanskrit. Considered a holy language, Sanskrit was thought of as the “Language of the Gods” and is the original language of Hindu Scriptures.</p><p id="24c8ea11-bb4d-8065-905d-e73a4554ef70" class="">
+</p><p id="24c8ea11-bb4d-80c1-ac3b-ec2de1becc0e" class="">The linguistic sophistication of Sanskrit is exemplified by Panini’s grammatical work, the Asthadhyayi, written around 1500 B.C. which is still unexcelled, representing one of the earliest and most comprehensive linguistic analyses in human history. Despite this rich heritage, the vast corpus of Sanskrit literature remains largely inaccessible in the digital formats.</p><p id="24c8ea11-bb4d-8020-9332-c7681d0c6f84" class="">
+</p><p id="24c8ea11-bb4d-80fa-a66b-f9a58ca510f5" class="">References:<br/>• <a href="https://en.wikipedia.org/wiki/Sanskrit">Sanskrit - Wikipedia<br/></a>• <a href="https://www.britannica.com/topic/Sanskrit-language">Sanskrit language | Britannica</a><br/>• <a href="https://www.ebsco.com/research-starters/language-and-linguistics/sanskrit-language">EBSCO Research Starters: Sanskrit Language</a><br/>• <a href="https://www.sas.upenn.edu/~haroldfs/sars238/intro/discovery.html">Origins of Linguistics - University of Pennsylvania</a></p><p id="24c8ea11-bb4d-80e5-b759-d175aa60538a" class="">
+</p><h1 id="24c8ea11-bb4d-80d2-8e24-f1c61be5382c" class="">Motivation</h1><p id="24c8ea11-bb4d-8018-8fdf-d55e609060ea" class="">The digitization of Sanskrit texts represents a critical bottleneck in preserving and accessing India’a intellectual heritage. Currently, the majority of Sanskrit literature exists in physical mansuscript and printed texts, with limited digital avalability. While some scanning initiatives have been undertaken, these efforts typically produce image-based documents that present several accessibility challenges:<br/></p><ol type="1" id="24c8ea11-bb4d-80aa-8dd6-fb84eab36a6b" class="numbered-list" start="1"><li><mark class="highlight-teal"><strong>Reading Difficulty</strong></mark>: Scanned copies are often of poor quality, making textual<br/>analysis challenging</li></ol><ol type="1" id="24c8ea11-bb4d-8080-b8cf-cbc2a54b5a7b" class="numbered-list" start="2"><li><mark class="highlight-teal"><strong>Limited Searchability</strong></mark>: Image-based documents cannot be indexed or searched<br/>effectively</li></ol><ol type="1" id="24c8ea11-bb4d-8064-bcf6-d4939cd5e673" class="numbered-list" start="3"><li><mark class="highlight-teal"><strong>Accessibility Barriers</strong></mark>: Visual impairments and varied device compatibility<br/>issues</li></ol><ol type="1" id="24c8ea11-bb4d-80a2-ab7e-f7836bb9b589" class="numbered-list" start="4"><li><mark class="highlight-teal"><strong>Scholarly Limitations</strong></mark>: Inability to perform computational text analysis, cross-<br/>referencing, or automated translation</li></ol><p id="24c8ea11-bb4d-8028-a463-d58469d47bae" class="">
+</p><p id="24c8ea11-bb4d-809b-b2c6-d797d54ae770" class="">The development of robust Sanskrit OCR system would significantly enhance accessibility to these texts while enabling advanced computational analysis of Sanskrit literature.The proposed model should demonstrate capability in:<br/>• Accurate text extraction from scanned manuscripts and printed materials<br/>• Structural understanding of Sanskrit textual organization (particularly shloka<br/>demarcation)<br/>• Language differentiation between Sanskrit and closely related languages (Hindi,<br/>Devanagari-based texts)</p><p id="24d8ea11-bb4d-8049-b698-eff4f0a166ed" class="">
+</p><p id="24c8ea11-bb4d-80e6-82c3-e0b8309f3594" class="">
+</p><figure id="24d8ea11-bb4d-809e-ba70-c40e463d58a3" class="image"><a href="Making%20of%20a%20Sanskrit%20OCR%2024c8ea11bb4d8070912ced0f6b7506f8/Screenshot_2025-08-12_at_12.59.59_AM.png"><img style="width:240px" src="Making%20of%20a%20Sanskrit%20OCR%2024c8ea11bb4d8070912ced0f6b7506f8/Screenshot_2025-08-12_at_12.59.59_AM.png"/></a><figcaption>Similarity between Hindi and Sanskrit can be viewed from this image.</figcaption></figure><h1 id="24c8ea11-bb4d-802d-99c0-e97c3ef964d1" class="">Technical Challenges and Research Roadblocks</h1><h2 id="24c8ea11-bb4d-8087-b653-fb220b0567eb" class="">Dataset Quality and Composition</h2><p id="24c8ea11-bb4d-8012-9c3c-ce994bea69a6" class="">The primary challenge lies in constructing a comprehensive training dataset. Unlike modern languages with abundant digital text, Sanskrit OCR requires specialized dataset addressing multiple variables:</p><p id="24c8ea11-bb4d-8036-a971-d474f764488f" class="">Proposed Dataset Categories (minimum 5-6 distinct types):<br/>• Historical manuscript variations<br/>• Different printing styles and fonts<br/>• Various paper qualities and aging conditions<br/>• Multiple script styles (Devanagari variations)<br/>• Mixed-language documents<br/>• Different text layouts and formatting conventions</p><p id="24c8ea11-bb4d-8053-9a65-ea29f15b3461" class="">
+</p><h2 id="24c8ea11-bb4d-809f-809b-fa72ac81ce43" class="">Structural Text Analysis</h2><p id="24c8ea11-bb4d-8069-a5c8-e78a0e712e48" class="">Sanskrit textual organization differs significantly from modern documents structures.<br/>Key considerations include:<div class="indented"><figure id="24c8ea11-bb4d-801c-ab04-d99daec5b741" class="image"><a href="Making%20of%20a%20Sanskrit%20OCR%2024c8ea11bb4d8070912ced0f6b7506f8/image.png"><img style="width:528px" src="Making%20of%20a%20Sanskrit%20OCR%2024c8ea11bb4d8070912ced0f6b7506f8/image.png"/></a><figcaption>                      Continuous text without differentiation of Shlokas </figcaption></figure></div></p><figure id="24c8ea11-bb4d-80c3-956f-e1d1088047cd" class="image"><a href="Making%20of%20a%20Sanskrit%20OCR%2024c8ea11bb4d8070912ced0f6b7506f8/image%201.png"><img style="width:528px" src="Making%20of%20a%20Sanskrit%20OCR%2024c8ea11bb4d8070912ced0f6b7506f8/image%201.png"/></a><figcaption>Differentiation between shlokas based on numbers as End-of-Sequence and          new line</figcaption></figure><div id="24c8ea11-bb4d-806c-a911-f595b7d624b1" class="column-list"><div id="24c8ea11-bb4d-808d-83e7-f53513a54821" style="width:50%" class="column"><figure id="24c8ea11-bb4d-80e1-9cd6-f17d7d2df1fa" class="image"><a href="Making%20of%20a%20Sanskrit%20OCR%2024c8ea11bb4d8070912ced0f6b7506f8/image%202.png"><img style="width:336px" src="Making%20of%20a%20Sanskrit%20OCR%2024c8ea11bb4d8070912ced0f6b7506f8/image%202.png"/></a><figcaption>Continuous yet differentiation between shlokas based on numbers as End-of-Sequence </figcaption></figure></div><div id="24c8ea11-bb4d-80db-888a-e3727a077de5" style="width:50%" class="column"><figure id="24c8ea11-bb4d-8048-accf-ce622e80f910" class="image"><a href="Making%20of%20a%20Sanskrit%20OCR%2024c8ea11bb4d8070912ced0f6b7506f8/a9d9dc22-f56b-43a6-a5ea-a5903f8d132b.png"><img style="width:368.52207293666027px" src="Making%20of%20a%20Sanskrit%20OCR%2024c8ea11bb4d8070912ced0f6b7506f8/a9d9dc22-f56b-43a6-a5ea-a5903f8d132b.png"/></a><figcaption>Continuous shloka and it’s translation</figcaption></figure></div></div><figure id="24c8ea11-bb4d-80a8-ac5d-eb3e001ae3ab" class="image"><a href="Making%20of%20a%20Sanskrit%20OCR%2024c8ea11bb4d8070912ced0f6b7506f8/image%203.png"><img style="width:599.9940185546875px" src="Making%20of%20a%20Sanskrit%20OCR%2024c8ea11bb4d8070912ced0f6b7506f8/image%203.png"/></a><figcaption>                                             Pair of Sanskrit shloka-translations</figcaption></figure><p id="24c8ea11-bb4d-8006-849b-d2d026a0ed51" class="">This structural diversity necessitates a flexible annotation and recognition framework<br/>capable of adapting to various textual organizations</p><h2 id="24c8ea11-bb4d-80af-95ca-ebb200029311" class="">Language Disambiguation</h2><p id="24c8ea11-bb4d-8096-8b53-d16d0999029b" class="">Sanskrit and Hindi share the Devanagri Scirpt, creating classification challenges.<br/>The model must distinguish between:<br/>• Pure Sanskrit verses<br/>• Hindi translations or commentary<br/>• Mixed-language sections<br/>• Sanskrit words in Hindi contexts</p><p id="24c8ea11-bb4d-8010-a58a-c7338f5c5b56" class="">
+</p><p id="24c8ea11-bb4d-8064-9906-c5f754603a63" class="">Below is the example of how the model distinguish between shlok vs non shlok content</p><div id="24c8ea11-bb4d-804d-94e6-c5a8c55a596d" class="column-list"><div id="24c8ea11-bb4d-80d1-aa8d-ece12550b5c7" style="width:50%" class="column"><figure id="24c8ea11-bb4d-8039-8711-d96cdd160610" class="image"><a href="Making%20of%20a%20Sanskrit%20OCR%2024c8ea11bb4d8070912ced0f6b7506f8/Screenshot_2025-08-11_at_3.22.55_PM.png"><img style="width:384px" src="Making%20of%20a%20Sanskrit%20OCR%2024c8ea11bb4d8070912ced0f6b7506f8/Screenshot_2025-08-11_at_3.22.55_PM.png"/></a><figcaption>Mix of Two languages, Hindi and Sanskrit; virtually impossible to separate on basis of text analysis alone. </figcaption></figure></div><div id="24c8ea11-bb4d-8057-b710-d10a82210de9" style="width:50%" class="column"><figure id="24c8ea11-bb4d-80d0-9f17-c4724a71efe9" class="image"><a href="Making%20of%20a%20Sanskrit%20OCR%2024c8ea11bb4d8070912ced0f6b7506f8/Screenshot_2025-08-11_at_3.22.27_PM.png"><img style="width:336px" src="Making%20of%20a%20Sanskrit%20OCR%2024c8ea11bb4d8070912ced0f6b7506f8/Screenshot_2025-08-11_at_3.22.27_PM.png"/></a><figcaption>Mix of two languages, separated on the basis of structure along with end-of-sequence number and text analysis </figcaption></figure><p id="24d8ea11-bb4d-8088-82cd-ceeb40d49ff9" class="">
+</p></div></div><h2 id="24c8ea11-bb4d-8085-8290-e0a65fdcc317" class="">Shloka Boundary Detection</h2><p id="24c8ea11-bb4d-809f-a1a7-ec729a44a4b7" class="">Accurate identification of verse boundaries is crucial for meaningful text<br/>segmentation. While traditional markers (||2||, etc.) provide some guidance, the<br/>model must learn to recognize:<br/>• Explicit numerical markers<br/>• Implicit poetic structure indicators<br/>• Contextual verse transitions<br/>• Incomplete or damaged boundary markers</p><figure id="24c8ea11-bb4d-80e9-8546-fad119a49939" class="image"><a href="Making%20of%20a%20Sanskrit%20OCR%2024c8ea11bb4d8070912ced0f6b7506f8/Screenshot_2025-08-11_at_3.40.43_PM.png"><img style="width:336px" src="Making%20of%20a%20Sanskrit%20OCR%2024c8ea11bb4d8070912ced0f6b7506f8/Screenshot_2025-08-11_at_3.40.43_PM.png"/></a></figure><p id="24c8ea11-bb4d-80cf-8e72-dc57bac61413" class="">
+</p><p id="24c8ea11-bb4d-80ff-9fec-ffc43fc5720e" class="">
+</p><h2 id="24c8ea11-bb4d-8077-ada4-c4c2b3633248" class="">Annotation Strategy and Data Preparation</h2><p id="24c8ea11-bb4d-8044-ae79-ccf6cac2f08f" class="">The annotation methodology represents a critical design decision requiring careful<br/>consideration of granularity levels:</p><ol type="1" id="24c8ea11-bb4d-80ec-9da6-d6d60356175e" class="numbered-list" start="1"><li><mark class="highlight-teal"><strong>Word-level annotation</strong></mark>: Highest precision but labor-intensive</li></ol><figure id="24d8ea11-bb4d-807e-920a-ee55c03dc897" class="image" style="text-align:center"><a href="Making%20of%20a%20Sanskrit%20OCR%2024c8ea11bb4d8070912ced0f6b7506f8/Screenshot_2025-08-12_at_12.34.47_AM.png"><img style="width:336px" src="Making%20of%20a%20Sanskrit%20OCR%2024c8ea11bb4d8070912ced0f6b7506f8/Screenshot_2025-08-12_at_12.34.47_AM.png"/></a></figure><p id="24c8ea11-bb4d-808d-94ae-fec249d313db" class="">
+</p><ol type="1" id="24c8ea11-bb4d-809a-a427-fe3c9ef4ee66" class="numbered-list" start="2"><li><mark class="highlight-teal"><strong>Morpheme-level annotation</strong></mark>: Linguistically sophisticated but complex</li></ol><ol type="1" id="24c8ea11-bb4d-803d-ba83-d086062b6ef0" class="numbered-list" start="3"><li><mark class="highlight-teal"><strong>Half-shloka annotation</strong></mark>: Balanced approach considering poetic structure<figure id="24d8ea11-bb4d-8051-9cba-debf044c36ab" class="image" style="text-align:center"><a href="Making%20of%20a%20Sanskrit%20OCR%2024c8ea11bb4d8070912ced0f6b7506f8/Screenshot_2025-08-12_at_12.40.08_AM.png"><img style="width:384px" src="Making%20of%20a%20Sanskrit%20OCR%2024c8ea11bb4d8070912ced0f6b7506f8/Screenshot_2025-08-12_at_12.40.08_AM.png"/></a></figure></li></ol><ol type="1" id="24c8ea11-bb4d-8024-bc02-c0d9e070fbdc" class="numbered-list" start="4"><li><mark class="highlight-teal"><strong>Complete shloka annotation</strong></mark>: Efficient but potentially less precise<br/>The selection of annotation strategy will significantly impact model performance and<br/>training efficiency.</li></ol><p id="24d8ea11-bb4d-8069-a449-d6487b6560b8" class="">
+</p><h2 id="24d8ea11-bb4d-80c3-b76d-d0aca9c0baf1" class="">Proposed Development Workflow</h2><h3 id="24d8ea11-bb4d-8040-bbf3-df536483c635" class=""><mark class="highlight-brown">Stage A: Binary Classification Model</mark></h3><p id="24d8ea11-bb4d-80e7-a01f-f0d9c1c4cec6" class="">Develop a preliminary classifier to distinguish between shloka and non-shloka text<br/>regions, enabling initial content filtering and reducing noise in subsequent<br/>processing stages</p><h3 id="24d8ea11-bb4d-80a9-97d2-fad5d79f0341" class=""><mark class="highlight-brown">Stage B: Image Preprocessing and Segmentation</mark></h3><p id="24d8ea11-bb4d-8079-941f-c984f7896dba" class="">Implement automated cropping algorithms to extract pure shloka images from<br/>source documents, creating a refined dataset for specialized OCR training</p><h3 id="24d8ea11-bb4d-8061-882d-d462b157f293" class=""><mark class="highlight-brown">Stage C: Parallel Corpus Construction</mark></h3><p id="24d8ea11-bb4d-80ed-aa1d-cced049eaa31" class="">Generate annotated image-text pairs from segmented shloka images, establishing<br/>the foundation for supervised learning approaches.</p><h3 id="24d8ea11-bb4d-80e1-83b6-ff2f20d5687d" class=""><mark class="highlight-brown">Stage D: Progressive Training Architecture</mark></h3><p id="24d8ea11-bb4d-80c0-8bc9-efb65223deed" class="">Implement a two-stage training methodology:</p><ol type="1" id="24d8ea11-bb4d-80a4-9d02-f0b2e25863ac" class="numbered-list" start="1"><li>Initial model training on Dataset A</li></ol><ol type="1" id="24d8ea11-bb4d-800d-bc85-d4bbc2a97e0b" class="numbered-list" start="2"><li>Validation and testing on Dataset B</li></ol><ol type="1" id="24d8ea11-bb4d-80ec-aeba-e1d6c005b567" class="numbered-list" start="3"><li>Incremental learning using Dataset A + high-confidence predictions from<br/>Dataset B</li></ol><ol type="1" id="24d8ea11-bb4d-8064-8e53-ec84d42aa65c" class="numbered-list" start="4"><li>Catastrophic forgetting prevention through progressive training techniques</li></ol><h3 id="24d8ea11-bb4d-8090-b731-eabc416c9b9b" class=""><mark class="highlight-brown">Stage E: Hierarchical Recognition System</mark></h3><p id="24d8ea11-bb4d-80ca-a5a7-d2c932f86680" class="">The final model architecture should demonstrate multi-level recognition capabilities:<br/><mark class="highlight-teal"><strong>E1: Primary Classification</strong></mark><strong><br/></strong>• Shloka vs. non-shloka content identification<br/><mark class="highlight-teal"><strong>E2: Inter-shloka Segmentation</strong></mark><strong><br/></strong>• Boundary detection between consecutive shlokas<br/><mark class="highlight-teal"><strong>E3: Intra-shloka Analysis</strong></mark><strong><br/></strong>• Recognition of constituent parts within individual shlokas<br/>• Syllable-level accuracy</p><p id="24e8ea11-bb4d-8024-a958-e859d7aedbb4" class="">
+</p></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>
